@@ -34,18 +34,16 @@ while True:
 
 
 # Routes
-@app.get("/")
-async def root():
-    return {"message": "Hello World"}
 
 
-@app.get("/posts")
+
+@app.get("/posts",tags=["Posts"])
 async def read_posts(db: Session = Depends(get_db)):
     posts = db.query(Post_model).all()
 
     return {"data": posts}
 
-@app.post("/posts", status_code=status.HTTP_201_CREATED)
+@app.post("/posts", status_code=status.HTTP_201_CREATED,tags=["Posts"])
 def create_posts(post: Post):
     post_dict = post.dict()
     post_dict['id'] = randrange(0, 1000000)
@@ -57,14 +55,14 @@ def create_posts(post: Post):
     return {"data": post_dict}
 
 
-@app.get("/posts/{id}")
+@app.get("/posts/{id}",tags=["Posts"])
 def get_post(id: int,db: Session = Depends(get_db)):
     new_post = db.query(Post_model).filter(Post_model.id == id).first()
     if not new_post:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Post with id {id} not found")
     return {"data_detail": new_post}
 
-@app.delete("/posts/{id}", status_code=status.HTTP_204_NO_CONTENT)
+@app.delete("/posts/{id}", status_code=status.HTTP_204_NO_CONTENT,tags=["Posts"])
 def delete_post(id: int,db: Session = Depends(get_db)):
     
 
@@ -73,7 +71,7 @@ def delete_post(id: int,db: Session = Depends(get_db)):
 
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
-@app.put("/posts/{id}")
+@app.put("/posts/{id}",tags=["Posts"])
 def update_post(id: int, post: Post,db: Session = Depends(get_db)):
     index = db.query(Post_model).filter(Post_model.id == id).first()
     if not index:
@@ -85,11 +83,9 @@ def update_post(id: int, post: Post,db: Session = Depends(get_db)):
     db.commit()
 
     return {"message": f"Post with id {id} updated successfully", "data": updated_post}
-# make a user route 
-import bcrypt
-# ...existing code...
 
-@app.post("/users", status_code=status.HTTP_201_CREATED)
+
+@app.post("/users", status_code=status.HTTP_201_CREATED,tags=["Users"])
 def create_user(user: UserCreate, db: Session = Depends(get_db)):
     # Hash the password
     hashed_password = bcrypt.hashpw(user.password.encode('utf-8'), bcrypt.gensalt())
@@ -102,7 +98,7 @@ def create_user(user: UserCreate, db: Session = Depends(get_db)):
     return {"data": new_user}
 # ...existing code...
 @app.get("/users/{id}")
-def get_user(id: int, db: Session = Depends(get_db)):
+def get_user(id: int, db: Session = Depends(get_db),tags=["Users"]):
     user = db.query(User_model).filter(User_model.id == id).first()
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User with id {id} not found")
