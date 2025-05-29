@@ -4,19 +4,22 @@ from random import randrange
 import psycopg2
 from psycopg2.extras import RealDictCursor
 import time
+import outh2
 from schema import  *
 from models import *
 from  database import engine,get_db
 from database import sessionlocal,get_db
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
+from fastapi import FastAPI, Depends
+
 
 
 from fastapi import APIRouter
 router = APIRouter()
 
 @router.get("/posts",tags=["Posts"])
-async def read_posts(db: Session = Depends(get_db)):
+async def read_posts(db: Session = Depends(get_db),current_user: int = Depends(outh2.get_current_user), limit: int = 10, skip: int = 0, search: Optional[str] = ""):
     posts = db.query(Post_model).all()
 
     return {"data": posts}
