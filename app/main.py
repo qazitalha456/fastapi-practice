@@ -2,6 +2,7 @@ from fastapi import FastAPI, Response, status, HTTPException,Depends
 import psycopg2
 from psycopg2.extras import RealDictCursor
 import time
+from routes import auth
 from routes import posts, user
 from schema import  *
 from models import *
@@ -39,7 +40,11 @@ app.include_router(
     prefix="/api",
     tags=["Users"]
 )   
-
+app.include_router(
+    auth.router,
+    prefix="/api",
+    tags=["Users"]
+)
 
 
 
