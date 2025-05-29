@@ -10,6 +10,7 @@ from  database import engine,get_db
 from database import sessionlocal,get_db
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
+import bcrypt
 
 
 
@@ -84,14 +85,22 @@ def update_post(id: int, post: Post,db: Session = Depends(get_db)):
     db.commit()
 
     return {"message": f"Post with id {id} updated successfully", "data": updated_post}
-# make a user route
+# make a user route 
+import bcrypt
+# ...existing code...
+
 @app.post("/users", status_code=status.HTTP_201_CREATED)
 def create_user(user: UserCreate, db: Session = Depends(get_db)):
-    new_user = User_model(**user.dict())
+    # Hash the password
+    hashed_password = bcrypt.hashpw(user.password.encode('utf-8'), bcrypt.gensalt())
+    user_data = user.dict()
+    user_data['password'] = hashed_password.decode('utf-8')
+    new_user = User_model(**user_data)
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
     return {"data": new_user}
+# ...existing code...
 @app.get("/users/{id}")
 def get_user(id: int, db: Session = Depends(get_db)):
     user = db.query(User_model).filter(User_model.id == id).first()
