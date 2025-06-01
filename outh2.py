@@ -34,7 +34,8 @@ def verify_token(token: str, db: Session = Depends(get_db)):
         user_id: int = payload.get("user_id")
         if user_id is None:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
-        token_data = TokenData(id=user_id)
+        token_data = TokenData(id=str(user_id))  # cast to string
+
     except JWTError:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
 

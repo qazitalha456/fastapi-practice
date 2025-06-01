@@ -4,6 +4,7 @@ from random import randrange
 import psycopg2
 from psycopg2.extras import RealDictCursor
 import time
+import outh2
 from schema import  *
 from models import *
 from  database import engine,get_db
@@ -26,7 +27,7 @@ def create_user(user: UserCreate, db: Session = Depends(get_db)):
     return {"data": new_user}
 # ...existing code...
 @router.get("/users/{id}")
-def get_user(id: int, db: Session = Depends(get_db),tags=["Users"]):
+def get_user(id: int, db: Session = Depends(get_db),tags=["Users"], current_user: int = Depends(outh2.get_current_user)):
     user = db.query(User_model).filter(User_model.id == id).first()
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User with id {id} not found")

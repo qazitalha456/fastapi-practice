@@ -19,32 +19,34 @@ from fastapi import APIRouter
 router = APIRouter()
 
 @router.get("/posts",tags=["Posts"])
-async def read_posts(db: Session = Depends(get_db),current_user: int = Depends(outh2.get_current_user), limit: int = 10, skip: int = 0, search: Optional[str] = ""):
+async def read_posts(db: Session = Depends(get_db), current_user: int = Depends(outh2.get_current_user)):
+    # Fetch all posts from the database
     posts = db.query(Post_model).all()
 
     return {"data": posts}
 
 @router.post("/posts", status_code=status.HTTP_201_CREATED,tags=["Posts"])
-def create_posts(post: Post):
-    post_dict = post.dict()
-    post_dict['id'] = randrange(0, 1000000)
-    # Add to the database
-    new_post = Post_model(**post_dict)
-    db = next(get_db())
-    db.add(new_post)
-    db.commit()
-    return {"data": post_dict}
-
+def create_posts(post: Post, current_user: int = Depends(outh2.get_current_user)):
+    try:
+        post_dict = post.dict()
+        # Add to the database
+        new_post = Post_model(**post_dict)
+        db = next(get_db())
+        db.add(new_post)
+        db.commit()
+        return {"data": post_dict}
+    except Exception as e:
+        return {"error": str(e)}
 
 @router.get("/posts/{id}",tags=["Posts"])
-def get_post(id: int,db: Session = Depends(get_db)):
+def get_post(id: int,db: Session = Depends(get_db), current_user: int = Depends(outh2.get_current_user)):
     new_post = db.query(Post_model).filter(Post_model.id == id).first()
     if not new_post:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Post with id {id} not found")
     return {"data_detail": new_post}
 
 @router.delete("/posts/{id}", status_code=status.HTTP_204_NO_CONTENT,tags=["Posts"])
-def delete_post(id: int,db: Session = Depends(get_db)):
+def delete_post(id: int,db: Session = Depends(get_db), current_user: int = Depends(outh2.get_current_user)):
     
 
     db.query(Post_model).filter(Post_model.id == id).delete(synchronize_session=False)
@@ -53,7 +55,7 @@ def delete_post(id: int,db: Session = Depends(get_db)):
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 @router.put("/posts/{id}",tags=["Posts"])
-def update_post(id: int, post: Post,db: Session = Depends(get_db)):
+def update_post(id: int, post: Post,db: Session = Depends(get_db), current_user: int = Depends(outh2.get_current_user)):
     index = db.query(Post_model).filter(Post_model.id == id).first()
     if not index:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Post with id {id} not found")
